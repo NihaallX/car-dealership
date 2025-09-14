@@ -1,0 +1,187 @@
+{% extends 'dealerships/base.html' %}
+
+{% block title %}Sentiment Analyzer Demo{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <h1>Sentiment Analyzer Demo</h1>
+        <p class="lead">Test our sentiment analysis service by entering some text below.</p>
+        
+        <div class="card">
+            <div class="card-body">
+                <form id="sentimentForm">
+                    <div class="mb-3">
+                        <label for="text" class="form-label">Text to Analyze</label>
+                        <textarea class="form-control" id="text" rows="4" 
+                                placeholder="Enter some text to analyze its sentiment..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="analyzeBtn">
+                        <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                        Analyze Sentiment
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <div id="results" class="mt-4" style="display: none;">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Analysis Results</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h6>Sentiment</h6>
+                            <span id="sentiment" class="badge"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <h6>Score</h6>
+                            <span id="score"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <h6>Comparative</h6>
+                            <span id="comparative"></span>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <h6>Analyzed Text</h6>
+                        <p id="analyzedText" class="text-muted"></p>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Positive Words</h6>
+                            <div id="positiveWords"></div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Negative Words</h6>
+                            <div id="negativeWords"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mt-4">
+            <h3>Sample Texts to Try</h3>
+            <div class="row">
+                <div class="col-md-4">
+                    <button class="btn btn-outline-success w-100 mb-2 sample-text" 
+                            data-text="I love this car! The service was excellent and the staff was very helpful.">
+                        Positive Example
+                    </button>
+                </div>
+                <div class="col-md-4">
+                    <button class="btn btn-outline-danger w-100 mb-2 sample-text" 
+                            data-text="This was a terrible experience. The car broke down and the service was awful.">
+                        Negative Example
+                    </button>
+                </div>
+                <div class="col-md-4">
+                    <button class="btn btn-outline-secondary w-100 mb-2 sample-text" 
+                            data-text="The car is okay. Nothing special but it does the job.">
+                        Neutral Example
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('sentimentForm');
+    const textArea = document.getElementById('text');
+    const analyzeBtn = document.getElementById('analyzeBtn');
+    const results = document.getElementById('results');
+    const spinner = analyzeBtn.querySelector('.spinner-border');
+    
+    // Sample text buttons
+    document.querySelectorAll('.sample-text').forEach(btn => {
+        btn.addEventListener('click', function() {
+            textArea.value = this.dataset.text;
+        });
+    });
+    
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const text = textArea.value.trim();
+        if (!text) return;
+        
+        // Show loading state
+        analyzeBtn.disabled = true;
+        spinner.classList.remove('d-none');
+        results.style.display = 'none';
+        
+        try {
+            const response = await fetch('/api/sentiment/analyze/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({ text: text })
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok) {
+                displayResults(data);
+                results.style.display = 'block';
+            } else {
+                alert('Error: ' + (data.error || 'Analysis failed'));
+            }
+        } catch (error) {
+            alert('Error: Could not connect to sentiment analysis service');
+            console.error('Error:', error);
+        } finally {
+            // Hide loading state
+            analyzeBtn.disabled = false;
+            spinner.classList.add('d-none');
+        }
+    });
+    
+    function displayResults(data) {
+        document.getElementById('sentiment').textContent = data.sentiment.toUpperCase();
+        document.getElementById('sentiment').className = `badge ${getSentimentBadgeClass(data.sentiment)}`;
+        document.getElementById('score').textContent = data.score;
+        document.getElementById('comparative').textContent = data.comparative.toFixed(4);
+        document.getElementById('analyzedText').textContent = data.text;
+        
+        const positiveWords = data.positive.length > 0 ? 
+            data.positive.map(word => `<span class="badge bg-success me-1">${word}</span>`).join('') :
+            '<span class="text-muted">None</span>';
+        document.getElementById('positiveWords').innerHTML = positiveWords;
+        
+        const negativeWords = data.negative.length > 0 ?
+            data.negative.map(word => `<span class="badge bg-danger me-1">${word}</span>`).join('') :
+            '<span class="text-muted">None</span>';
+        document.getElementById('negativeWords').innerHTML = negativeWords;
+    }
+    
+    function getSentimentBadgeClass(sentiment) {
+        switch (sentiment) {
+            case 'positive': return 'bg-success';
+            case 'negative': return 'bg-danger';
+            default: return 'bg-secondary';
+        }
+    }
+    
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+});
+</script>
+{% endblock %}

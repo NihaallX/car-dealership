@@ -1,0 +1,19 @@
+{
+  "name": "sentiment-analyzer",
+  "version": "1.0.0",
+  "description": "Sentiment analysis microservice for dealership reviews",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "body-parser": "^1.20.1",
+    "sentiment": "^5.0.2"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.20"
+  }
+}

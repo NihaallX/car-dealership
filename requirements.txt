@@ -1,0 +1,9 @@
+django>=4.2
+djangorestframework
+django-cors-headers
+requests
+pillow
+gunicorn
+psycopg2-binary
+redis
+celery

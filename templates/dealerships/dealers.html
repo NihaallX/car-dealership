@@ -1,0 +1,49 @@
+{% extends 'dealerships/base.html' %}
+
+{% block title %}Dealers - Best Cars Dealership{% endblock %}
+
+{% block content %}
+<h1>Find Dealers</h1>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <form method="get" class="d-flex">
+            <select name="state" class="form-select me-2">
+                <option value="">All States</option>
+                <option value="TX" {% if state_filter == 'TX' %}selected{% endif %}>Texas</option>
+                <option value="CA" {% if state_filter == 'CA' %}selected{% endif %}>California</option>
+                <option value="NY" {% if state_filter == 'NY' %}selected{% endif %}>New York</option>
+                <option value="FL" {% if state_filter == 'FL' %}selected{% endif %}>Florida</option>
+                <option value="KS" {% if state_filter == 'KS' %}selected{% endif %}>Kansas</option>
+            </select>
+            <button class="btn btn-primary" type="submit">Filter</button>
+        </form>
+    </div>
+</div>
+
+<div class="row">
+    {% for dealer in dealers %}
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">{{ dealer.name }}</h5>
+                <p class="card-text">
+                    <strong>Address:</strong> {{ dealer.address }}<br>
+                    <strong>City:</strong> {{ dealer.city }}, {{ dealer.state }} {{ dealer.zip }}<br>
+                </p>
+                <a href="{% url 'dealer_details' dealer.id %}" class="btn btn-primary">View Details</a>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'add_review' dealer.id %}" class="btn btn-success">Post Review</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="alert alert-info">
+            No dealers found{% if state_filter %} in {{ state_filter }}{% endif %}.
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

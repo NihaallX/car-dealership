@@ -1,0 +1,87 @@
+{% extends 'dealerships/base.html' %}
+
+{% block title %}Add Review - {{ dealer.name }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <h1>Add Review for {{ dealer.name }}</h1>
+        
+        <div class="card">
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Your Name</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="review" class="form-label">Review</label>
+                        <textarea class="form-control" id="review" name="review" rows="4" required></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="purchase" name="purchase">
+                            <label class="form-check-label" for="purchase">
+                                I purchased a vehicle from this dealership
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div id="purchase-details" style="display: none;">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="car_make" class="form-label">Car Make</label>
+                                    <select class="form-select" id="car_make" name="car_make">
+                                        <option value="">Select Make</option>
+                                        <option value="Toyota">Toyota</option>
+                                        <option value="Ford">Ford</option>
+                                        <option value="BMW">BMW</option>
+                                        <option value="Honda">Honda</option>
+                                        <option value="Chevrolet">Chevrolet</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="car_model" class="form-label">Car Model</label>
+                                    <input type="text" class="form-control" id="car_model" name="car_model">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="car_year" class="form-label">Year</label>
+                                    <input type="number" class="form-control" id="car_year" name="car_year" min="2000" max="2024">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="purchase_date" class="form-label">Purchase Date</label>
+                            <input type="date" class="form-control" id="purchase_date" name="purchase_date">
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'dealer_details' dealer.dealerId %}" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-success">Submit Review</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('purchase').addEventListener('change', function() {
+    const purchaseDetails = document.getElementById('purchase-details');
+    if (this.checked) {
+        purchaseDetails.style.display = 'block';
+    } else {
+        purchaseDetails.style.display = 'none';
+    }
+});
+</script>
+{% endblock %}
