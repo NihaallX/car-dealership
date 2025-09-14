@@ -7,3 +7,5 @@ gunicorn
 psycopg2-binary
 redis
 celery
+dj-database-url
+whitenoise
